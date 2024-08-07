@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# https://doc.rust-lang.org/rustc/instrument-coverage.html
+
+readonly RUSTUP="$HOME/.rustup"
+readonly NAME="fqs"
+
+
+# ----------
+# Functions.
+
+function setup() {
+        rustup component add llvm-tools-preview
+
+        LLVMCOV=$(find "${RUSTUP}" -name "llvm-cov")
+        [ -f "${LLVMCOV}" ] || { \
+                                 echo "Could not find llvm-cov"; exit 1; }
+
+        LLVMPROF=$(find "${RUSTUP}" -name "llvm-profdata")
+        [ -f "${LLVMPROF}" ] || { \
+                                  echo "Could not find llvm-profdata"; exit 1; }
+}
+
+function clean() {
+        ### Remove old files if any.
+        rm -f "${NAME}".profdata
+        rm -f default_*
+}
+
+function run() {
+        ### Run tests with instrumentation for coverage.
+        RUSTFLAGS="-C instrument-coverage" cargo test --tests
+}
+
+function merge() {
+        ### Merge raw files.
+        "${LLVMPROF}" \
+                merge \
+                -sparse \
+                default_*.profraw \
+                -o "${NAME}".profdata
+}
+
+function report_and_show() {
+        time "${LLVMCOV}" report \
+                     --use-color --ignore-filename-regex='/.cargo/registry' \
+                     --instr-profile="${NAME}".profdata \
+                     $( \
+                        for file in \
+                        $( \
+                           RUSTFLAGS="-C instrument-coverage" \
+                                    cargo test --tests --no-run --message-format=json \
+                                   | jq -r "select(.profile.test == true) | .filenames[]" \
+                                   | grep -v dSYM - \
+                        ); \
+                        do \
+                                printf "%s %s " -object $file; \
+                        done \
+                     )
+
+        time "${LLVMCOV}" show \
+                     --use-color --ignore-filename-regex='/.cargo/registry' \
+                     --instr-profile="${NAME}".profdata \
+                     $( \
+                        for file in \
+                        $( \
+                           RUSTFLAGS="-C instrument-coverage" \
+                                    cargo test --tests --no-run --message-format=json \
+                                   | jq -r "select(.profile.test == true) | .filenames[]" \
+                                   | grep -v dSYM - \
+                        ); \
+                        do \
+                                printf "%s %s " -object $file; \
+                        done \
+                     ) \
+                     --show-instantiations --show-line-counts-or-regions
+}
+
+function report() {
+        ### Report coverage summary.
+        time "${LLVMCOV}" report \
+                     $( \
+                        for file in \
+                        $( \
+                           RUSTFLAGS="-C instrument-coverage" \
+                                    cargo test --tests --no-run --message-format=json \
+                                   | jq -r "select(.profile.test == true) | .filenames[]" \
+                                   | grep -v dSYM - \
+                        ); \
+                        do \
+                                printf "%s %s " -object $file; \
+                        done \
+                     ) \
+                     --instr-profile="${NAME}".profdata --summary-only
+}
+
+function cov() {
+        setup
+        clean
+        run
+        merge
+        report
+        #_report_and_show
+}
+
+cov
