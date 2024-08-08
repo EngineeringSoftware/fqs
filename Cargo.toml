@@ -1,6 +1,6 @@
 [package]
 name = "fqs"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 description = "Command line tool for writing file queries"
 license = "BSD-3-Clause"
