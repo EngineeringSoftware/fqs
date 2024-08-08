@@ -3,6 +3,7 @@
 [![test](https://github.com/EngineeringSoftware/fqs/actions/workflows/test.yml/badge.svg)](https://github.com/EngineeringSoftware/fqs/actions/workflows/test.yml)
 [![coverage](https://github.com/EngineeringSoftware/fqs/actions/workflows/coverage.yml/badge.svg)](https://github.com/EngineeringSoftware/fqs/actions/workflows/coverage.yml)
 [![fmt](https://github.com/EngineeringSoftware/fqs/actions/workflows/fmt.yml/badge.svg)](https://github.com/EngineeringSoftware/fqs/actions/workflows/fmt.yml)
+[![Crates.io Version](https://img.shields.io/crates/v/fqs.svg)](https://crates.io/crates/fqs)
 
 `fqs` is a command line tool for writing queries over files. Query
 syntax is inspired by SQL. In many ways `fqs` is similar to one (or
