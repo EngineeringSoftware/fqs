@@ -5,5 +5,7 @@ edition = "2021"
 description = "Command line tool for writing file queries"
 license = "BSD-3-Clause"
 authors = ["Milos Gligoric <milos.gligoric@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/EngineeringSoftware/fqs"
 
 [dependencies]
